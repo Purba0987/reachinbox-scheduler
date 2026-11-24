@@ -47,10 +47,13 @@ export const QueueMonitoringView: React.FC<QueueMonitoringViewProps> = ({
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
+  const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+  const bullBoardUrl = (import.meta.env.VITE_API_BASE_URL ? (import.meta.env.VITE_API_BASE_URL as string).replace('/api', '') : 'http://localhost:5000') + '/admin/queues';
+
   const fetchStats = async () => {
     setIsRefreshing(true);
     try {
-      const res = await axios.get('http://localhost:5000/api/queue/stats');
+      const res = await axios.get(`${apiBase}/queue/stats`);
       if (res.data) {
         setQueueStats({
           ...res.data,
@@ -462,7 +465,7 @@ export const QueueMonitoringView: React.FC<QueueMonitoringViewProps> = ({
           {/* Quick link to Bull Board */}
           <div className="pt-4 border-t border-[#1b1e3d] mt-4">
             <a
-              href="http://localhost:5000/admin/queues"
+              href={bullBoardUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full py-2.5 px-3 bg-[#151735] hover:bg-[#1c1e45] text-purple-300 hover:text-white rounded-xl text-xs font-semibold border border-purple-500/30 flex items-center justify-center gap-2 transition-all"

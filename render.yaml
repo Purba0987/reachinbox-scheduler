@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: reachinbox-scheduler-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        value: postgresql://neondb_owner:npg_6mUANytO8CrM@ep-icy-hat-bez48d4r.c-9.us-east-2.aws.neon.tech/neondb?sslmode=require
+      - key: REDIS_URL
+        value: rediss://default:gQAAAAAAA0xXAAIgcDI0M2I2Mzk4ZjQ5ODA0ZGNkODhkYTM2OGVjYTNlY2I3Nw@causal-eel-216151.upstash.io:6379
+      - key: WORKER_CONCURRENCY
+        value: 5
+      - key: DEFAULT_DELAY_BETWEEN_EMAILS_SECONDS
+        value: 2
+      - key: DEFAULT_MAX_EMAILS_PER_HOUR_PER_SENDER
+        value: 5
+      - key: ELASTICSEARCH_URL
+        value: http://localhost:9200
