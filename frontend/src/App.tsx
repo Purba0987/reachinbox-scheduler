@@ -177,9 +177,9 @@ export const App: React.FC = () => {
           <Sidebar
             activeTab={activeTab}
             onSelectTab={(tab) => setActiveTab(tab)}
-            scheduledCount={scheduledCount || 16}
-            sentCount={sentCount || 248}
-            failedCount={failedJobsCount || 3}
+            scheduledCount={scheduledCount}
+            sentCount={sentCount}
+            failedCount={failedJobsCount}
             onOpenSlack={() => setIsSlackOpen(true)}
             onToggleLanding={() => setViewMode('landing')}
           />
@@ -256,7 +256,7 @@ export const App: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* 2. 4 Stat / Metric Cards matching Image 1 */}
+                  {/* 2. 4 Stat / Metric Cards */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {/* Stat Card 1: Scheduled Emails */}
                     <div className="p-5 rounded-2xl bg-[#0e1022]/80 border border-[#1f2244] shadow-lg relative overflow-hidden group hover:border-purple-500/40 transition-all">
@@ -265,12 +265,12 @@ export const App: React.FC = () => {
                           <Mail className="w-5 h-5" />
                         </div>
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-600/20 text-purple-300 border border-purple-500/30 flex items-center gap-1">
-                          <span>↑</span> 12%
+                          <span>↑</span> Active
                         </span>
                       </div>
                       <div className="space-y-0.5">
                         <h3 className="text-2xl font-black text-white tracking-tight">
-                          {scheduledCount || 16}
+                          {scheduledCount}
                         </h3>
                         <p className="text-xs text-slate-400">Scheduled Emails</p>
                       </div>
@@ -288,12 +288,12 @@ export const App: React.FC = () => {
                           <Send className="w-5 h-5" />
                         </div>
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-600/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
-                          <span>↑</span> 18%
+                          <span>↑</span> Delivered
                         </span>
                       </div>
                       <div className="space-y-0.5">
                         <h3 className="text-2xl font-black text-white tracking-tight">
-                          {sentCount || 248}
+                          {sentCount}
                         </h3>
                         <p className="text-xs text-slate-400">Sent Emails</p>
                       </div>
@@ -311,12 +311,12 @@ export const App: React.FC = () => {
                           <AlertTriangle className="w-5 h-5" />
                         </div>
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-600/20 text-rose-300 border border-rose-500/30 flex items-center gap-1">
-                          <span>↓</span> 5%
+                          <span>↓</span> Errors
                         </span>
                       </div>
                       <div className="space-y-0.5">
                         <h3 className="text-2xl font-black text-white tracking-tight">
-                          {failedJobsCount || 3}
+                          {failedJobsCount}
                         </h3>
                         <p className="text-xs text-slate-400">Failed Emails</p>
                       </div>
@@ -327,19 +327,21 @@ export const App: React.FC = () => {
                       </svg>
                     </div>
 
-                    {/* Stat Card 4: Active Campaigns */}
+                    {/* Stat Card 4: Total Jobs */}
                     <div className="p-5 rounded-2xl bg-[#0e1022]/80 border border-[#1f2244] shadow-lg relative overflow-hidden group hover:border-indigo-500/40 transition-all">
                       <div className="flex items-center justify-between mb-3">
                         <div className="w-10 h-10 rounded-xl bg-indigo-600/20 text-indigo-400 flex items-center justify-center">
                           <BarChart3 className="w-5 h-5" />
                         </div>
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 flex items-center gap-1">
-                          <span>↑</span> 10%
+                          <span>★</span> Total
                         </span>
                       </div>
                       <div className="space-y-0.5">
-                        <h3 className="text-2xl font-black text-white tracking-tight">12</h3>
-                        <p className="text-xs text-slate-400">Active Campaigns</p>
+                        <h3 className="text-2xl font-black text-white tracking-tight">
+                          {scheduledCount + sentCount}
+                        </h3>
+                        <p className="text-xs text-slate-400">Total Email Jobs</p>
                       </div>
                       {/* Purple Sparkline Wave */}
                       <svg className="w-full h-8 mt-2 text-indigo-500/40 overflow-hidden" viewBox="0 0 100 25" preserveAspectRatio="none">
@@ -349,7 +351,7 @@ export const App: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* 3. Control & Filter Bar matching Image 1 */}
+                  {/* 3. Control & Filter Bar */}
                   <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
                     {/* Pill Tabs */}
                     <div className="flex items-center gap-2">
@@ -364,7 +366,7 @@ export const App: React.FC = () => {
                         <Calendar className="w-3.5 h-3.5 text-purple-400" />
                         <span>Scheduled Emails</span>
                         <span className="text-[10px] px-2 py-0.2 rounded-full font-bold bg-purple-600/30 text-purple-200 border border-purple-400/30">
-                          {scheduledCount || 16}
+                          {scheduledCount}
                         </span>
                       </button>
 
@@ -379,7 +381,7 @@ export const App: React.FC = () => {
                         <Send className="w-3.5 h-3.5 text-emerald-400" />
                         <span>Sent Emails</span>
                         <span className="text-[10px] px-2 py-0.2 rounded-full font-bold bg-emerald-600/20 text-emerald-300 border border-emerald-400/30">
-                          {sentCount || 248}
+                          {sentCount}
                         </span>
                       </button>
                     </div>
@@ -427,12 +429,16 @@ export const App: React.FC = () => {
                         isLoading={isLoadingScheduled}
                         onCancelJob={handleCancelJob}
                         onCompose={() => setIsComposeOpen(true)}
+                        searchQuery={searchQuery}
+                        onClearFilter={() => setSearchQuery('')}
                       />
                     ) : (
                       <SentTable
                         jobs={sentJobs}
                         isLoading={isLoadingSent}
                         onCompose={() => setIsComposeOpen(true)}
+                        searchQuery={searchQuery}
+                        onClearFilter={() => setSearchQuery('')}
                       />
                     )}
                   </div>

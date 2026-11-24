@@ -15,7 +15,9 @@ import {
   EyeOff, 
   AlertCircle,
   Sparkles,
-  Hash 
+  Hash,
+  X,
+  ExternalLink
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -36,6 +38,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDemoVideoOpen, setIsDemoVideoOpen] = useState(false);
 
   const scrollToAuthCard = () => {
     const card = document.getElementById('auth-card');
@@ -71,19 +74,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const handleDemoSignIn = async () => {
     setIsSubmitting(true);
     try {
-      await loginWithEmail('developer@reachinbox.ai', 'demo123456');
-      toast.success('Signed in as ReachInbox Developer!');
+      await loginWithEmail('purba@gmail.com', 'demo123456');
+      toast.success('Signed in as Purba Hanra!');
       setTimeout(() => {
         onOpenDashboard();
       }, 250);
     } catch {
       await loginWithGoogle(undefined, {
-        email: 'developer@reachinbox.ai',
-        name: 'ReachInbox Developer',
+        email: 'purba@gmail.com',
+        name: 'Purba Hanra',
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
         sub: 'demo_dev_user',
       });
-      toast.success('Signed in as ReachInbox Developer!');
+      toast.success('Signed in as Purba Hanra!');
       setTimeout(() => {
         onOpenDashboard();
       }, 250);
@@ -258,8 +261,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </button>
 
               <button
-                onClick={isLoggedIn ? onOpenDashboard : scrollToAuthCard}
-                className="flex items-center gap-2.5 px-6 py-3.5 rounded-full bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm border border-slate-200/90 shadow-sm hover:shadow transition-all hover:scale-105 active:scale-95"
+                onClick={() => setIsDemoVideoOpen(true)}
+                className="flex items-center gap-2.5 px-6 py-3.5 rounded-full bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm border border-slate-200/90 shadow-sm hover:shadow transition-all hover:scale-105 active:scale-95 cursor-pointer"
               >
                 <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center text-purple-700">
                   <Play className="w-3 h-3 fill-current ml-0.5" />
@@ -687,6 +690,115 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       <footer className="border-t border-slate-200/80 py-8 bg-white/40 text-center text-xs text-slate-400">
         <p>© 2026 ReachInbox.ai • Outbox Labs. All rights reserved.</p>
       </footer>
+
+      {/* Interactive Walkthrough & Demo Video Modal */}
+      {isDemoVideoOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="w-full max-w-3xl bg-[#0c0e1e] border border-purple-500/30 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#1b1e3d] bg-[#10132b]">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-purple-600/20 text-purple-400 flex items-center justify-center">
+                  <Play className="w-4 h-4 fill-current ml-0.5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white">ReachInbox Scheduler System Walkthrough</h3>
+                  <p className="text-[11px] text-slate-400">Architecture, BullMQ queues, restart recovery & live Slack alerts</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsDemoVideoOpen(false)}
+                className="p-1.5 text-slate-400 hover:text-white hover:bg-[#1a1d3d] rounded-xl transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body: Interactive Walkthrough Preview */}
+            <div className="p-6 overflow-y-auto space-y-5 text-slate-200 text-xs">
+              {/* Highlight Banner */}
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-900/30 via-indigo-900/20 to-purple-950/30 border border-purple-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-600/30 text-purple-300 border border-purple-400/30 uppercase">
+                    5-Minute Assignment Demo
+                  </span>
+                  <h4 className="text-sm font-bold text-white">Full-Stack Email Scheduler Walkthrough</h4>
+                  <p className="text-slate-300 text-[11px]">
+                    See BullMQ delayed jobs, server restart resilience, sliding-window rate limit, and live Slack alerts in action.
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    setIsDemoVideoOpen(false);
+                    onOpenDashboard();
+                  }}
+                  className="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold text-xs rounded-xl shadow-lg transition-all flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer hover:scale-105 active:scale-95"
+                >
+                  <span>Launch Live App</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {/* 4 Core Demonstration Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div className="p-4 rounded-xl bg-[#12152d] border border-[#20254d] space-y-2">
+                  <div className="flex items-center gap-2 text-purple-300 font-bold">
+                    <span className="w-5 h-5 rounded-full bg-purple-600/30 flex items-center justify-center text-[10px]">1</span>
+                    <span>Email Scheduling & Throttling</span>
+                  </div>
+                  <p className="text-slate-400 text-[11px] leading-relaxed">
+                    Upload CSV leads with delay between sends (min 2 seconds). BullMQ schedules delayed jobs into Redis sorted sets (zero cron).
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl bg-[#12152d] border border-[#20254d] space-y-2">
+                  <div className="flex items-center gap-2 text-emerald-300 font-bold">
+                    <span className="w-5 h-5 rounded-full bg-emerald-600/30 flex items-center justify-center text-[10px]">2</span>
+                    <span>Server Restart Recovery</span>
+                  </div>
+                  <p className="text-slate-400 text-[11px] leading-relaxed">
+                    Jobs persist in Redis and PostgreSQL. On boot, <code className="text-emerald-400">reconcilePendingJobsOnStartup()</code> restores pending jobs without duplicates.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl bg-[#12152d] border border-[#20254d] space-y-2">
+                  <div className="flex items-center gap-2 text-amber-300 font-bold">
+                    <span className="w-5 h-5 rounded-full bg-amber-600/30 flex items-center justify-center text-[10px]">3</span>
+                    <span>Hourly Rate Limiting & Slack Alert</span>
+                  </div>
+                  <p className="text-slate-400 text-[11px] leading-relaxed">
+                    Atomic Redis counters track sends per sender per hour. When the cap is reached, jobs are postponed and a live Slack webhook alert is dispatched.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl bg-[#12152d] border border-[#20254d] space-y-2">
+                  <div className="flex items-center gap-2 text-cyan-300 font-bold">
+                    <span className="w-5 h-5 rounded-full bg-cyan-600/30 flex items-center justify-center text-[10px]">4</span>
+                    <span>Ethereal SMTP & Queue Dashboard</span>
+                  </div>
+                  <p className="text-slate-400 text-[11px] leading-relaxed">
+                    Multiple Ethereal senders deliver test emails with preview links. Live BullMQ Queue Monitoring tracks Active, Waiting, Delayed, and Completed metrics.
+                  </p>
+                </div>
+              </div>
+
+              {/* Video Link / Notice */}
+              <div className="p-3.5 rounded-xl bg-[#0f1226] border border-[#1b1f40] flex items-center justify-between text-[11px] text-slate-400">
+                <span>📹 Video walkthrough instructions are documented in <strong className="text-white">README.md</strong>.</span>
+                <a
+                  href="https://github.com/Purba0987/reachinbox-scheduler#testing-the-4-key-demo-scenarios"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-purple-400 hover:text-purple-300 flex items-center gap-1 font-semibold"
+                >
+                  <span>View Scenarios Guide</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

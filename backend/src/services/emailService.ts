@@ -31,7 +31,7 @@ export async function getOrCreateDefaultSender() {
     if (config.ethereal.user && config.ethereal.pass) {
       sender = await prisma.sender.create({
         data: {
-          name: 'Primary Ethereal Sender',
+          name: 'Primary Ethereal Sender (Marketing)',
           email: config.ethereal.user,
           smtpHost: config.ethereal.host,
           smtpPort: config.ethereal.port,
@@ -44,23 +44,75 @@ export async function getOrCreateDefaultSender() {
     } else {
       // Auto-generate test account using nodemailer
       console.log('Generating new Ethereal test account...');
-      const testAccount = await nodemailer.createTestAccount();
-      sender = await prisma.sender.create({
-        data: {
-          name: 'Auto-Generated Ethereal Sender',
-          email: testAccount.user,
-          smtpHost: testAccount.smtp.host,
-          smtpPort: testAccount.smtp.port,
-          smtpUser: testAccount.user,
-          smtpPass: testAccount.pass,
-          isDefault: true,
-        },
-      });
-      console.log(`✅ Auto-created Ethereal Sender: ${sender.email}`);
+      try {
+        const testAccount = await nodemailer.createTestAccount();
+        sender = await prisma.sender.create({
+          data: {
+            name: 'Primary Ethereal Sender (Marketing)',
+            email: testAccount.user,
+            smtpHost: testAccount.smtp.host,
+            smtpPort: testAccount.smtp.port,
+            smtpUser: testAccount.user,
+            smtpPass: testAccount.pass,
+            isDefault: true,
+          },
+        });
+        console.log(`✅ Auto-created Ethereal Sender: ${sender.email}`);
+      } catch {
+        sender = await prisma.sender.create({
+          data: {
+            name: 'Primary Ethereal Sender (Marketing)',
+            email: 'marketing.campaigns@ethereal.email',
+            smtpHost: 'smtp.ethereal.email',
+            smtpPort: 587,
+            smtpUser: 'marketing.campaigns@ethereal.email',
+            smtpPass: 'marketing_pass_123',
+            isDefault: true,
+          },
+        });
+      }
     }
   }
 
   return sender;
+}
+
+export async function ensureMultipleSendersExist() {
+  try {
+    const defaultSender = await getOrCreateDefaultSender();
+    const count = await prisma.sender.count();
+    if (count < 2) {
+      try {
+        const testAccount = await nodemailer.createTestAccount();
+        await prisma.sender.create({
+          data: {
+            name: 'Secondary Ethereal Sender (Outreach)',
+            email: testAccount.user,
+            smtpHost: testAccount.smtp.host,
+            smtpPort: testAccount.smtp.port,
+            smtpUser: testAccount.user,
+            smtpPass: testAccount.pass,
+            isDefault: false,
+          },
+        });
+        console.log('✅ Auto-created Secondary Outreach Ethereal Sender');
+      } catch {
+        await prisma.sender.create({
+          data: {
+            name: 'Secondary Ethereal Sender (Outreach)',
+            email: 'outreach.leads@ethereal.email',
+            smtpHost: 'smtp.ethereal.email',
+            smtpPort: 587,
+            smtpUser: 'outreach.leads@ethereal.email',
+            smtpPass: 'outreach_secret_pass',
+            isDefault: false,
+          },
+        });
+      }
+    }
+  } catch (err: any) {
+    console.warn('ensureMultipleSendersExist note:', err.message);
+  }
 }
 
 export async function createNewSender(name: string, customEmail?: string) {
@@ -101,6 +153,7 @@ export function getTransporterForSender(sender: {
     },
     tls: {
       rejectUnauthorized: false,
+      checkServerIdentity: () => undefined,
     },
     connectionTimeout: 15000,
   });
@@ -135,6 +188,7 @@ export async function sendEmailViaEthereal(params: SendEmailParams): Promise<Sen
         },
         tls: {
           rejectUnauthorized: false,
+          checkServerIdentity: () => undefined,
         },
         connectionTimeout: 8000,
         greetingTimeout: 8000,

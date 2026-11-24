@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Bell, ChevronDown } from 'lucide-react';
+import { Bell, ChevronDown, LogOut } from 'lucide-react';
 
 interface HeaderProps {
   onOpenSlack: () => void;
@@ -16,11 +16,12 @@ export const Header: React.FC<HeaderProps> = ({
   slackChannel,
   onToggleView,
 }) => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   return (
     <header className="border-b border-[#16182e] bg-[#090b16]/80 backdrop-blur-md sticky top-0 z-30 h-16 px-6 flex items-center justify-between">
-      {/* Left: Live BullMQ Queue Monitor Pill matching Image 1 */}
+      {/* Left: Live BullMQ Queue Monitor Pill */}
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-[#121429] border border-[#222547] text-xs font-semibold text-slate-300 shadow-sm cursor-pointer hover:border-purple-500/40 transition-colors">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-sm shadow-emerald-400" />
@@ -28,8 +29,8 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Right: Slack Connect, Notification Bell, User Profile */}
-      <div className="flex items-center gap-4">
+      {/* Right: Slack Connect, Notification Bell, User Profile with Name & Email */}
+      <div className="flex items-center gap-3 sm:gap-4">
         {/* Toggle to Landing Page button */}
         {onToggleView && (
           <button
@@ -63,7 +64,7 @@ export const Header: React.FC<HeaderProps> = ({
           <span>{slackConnected ? (slackChannel ? `Slack: ${slackChannel}` : 'Slack Connected') : 'Connect Slack'}</span>
         </button>
 
-        {/* Notification Bell Icon with Badge 2 */}
+        {/* Notification Bell Icon */}
         <div className="relative p-2 rounded-xl text-slate-400 hover:text-white hover:bg-[#16182f] cursor-pointer transition-colors">
           <Bell className="w-4 h-4" />
           <span className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-rose-500 text-white font-bold text-[9px] flex items-center justify-center">
@@ -71,17 +72,57 @@ export const Header: React.FC<HeaderProps> = ({
           </span>
         </div>
 
-        {/* User Profile matching Image 1 */}
-        <div className="flex items-center gap-2 pl-2 border-l border-[#1b1e38] cursor-pointer">
-          <img
-            src={user?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"}
-            alt={user?.name || 'Purba Hanra'}
-            className="w-8 h-8 rounded-full border border-purple-500/40 object-cover"
-          />
-          <span className="hidden sm:inline font-bold text-xs text-white">
-            {user?.name || 'Purba Hanra'}
-          </span>
-          <ChevronDown className="w-3 h-3 text-slate-400" />
+        {/* User Profile Container: Avatar + Name + Required Email + Logout */}
+        <div className="relative flex items-center gap-3 pl-3 border-l border-[#1b1e38]">
+          <div 
+            onClick={() => setShowProfileMenu(!showProfileMenu)}
+            className="flex items-center gap-2.5 cursor-pointer p-1.5 rounded-xl hover:bg-[#151733] transition-colors"
+          >
+            <img
+              src={user?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"}
+              alt={user?.name || 'User'}
+              className="w-8 h-8 rounded-full border border-purple-500/40 object-cover"
+            />
+            <div className="hidden sm:flex flex-col text-left">
+              <span className="font-bold text-xs text-white leading-tight">
+                {user?.name || 'Purba Hanra'}
+              </span>
+              <span className="text-[10px] text-slate-400 leading-tight">
+                {user?.email || 'purba@gmail.com'}
+              </span>
+            </div>
+            <ChevronDown className="w-3 h-3 text-slate-400" />
+          </div>
+
+          {/* Direct Logout Button */}
+          <button
+            onClick={logout}
+            title="Log Out"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-rose-300 hover:text-white bg-rose-950/30 hover:bg-rose-900/50 border border-rose-500/30 transition-all hover:scale-105 active:scale-95"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">Logout</span>
+          </button>
+
+          {/* Profile Dropdown Menu */}
+          {showProfileMenu && (
+            <div className="absolute top-14 right-0 w-56 bg-[#0f1226] border border-[#23274d] rounded-2xl shadow-2xl p-3 z-50 animate-in fade-in slide-in-from-top-2">
+              <div className="px-2 py-2 border-b border-[#1f2347] mb-2">
+                <p className="text-xs font-bold text-white truncate">{user?.name || 'Purba Hanra'}</p>
+                <p className="text-[11px] text-purple-300 truncate">{user?.email || 'purba@gmail.com'}</p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowProfileMenu(false);
+                  logout();
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-rose-400 hover:text-white hover:bg-rose-600/20 rounded-xl transition-colors"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Sign Out</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>

@@ -1,12 +1,14 @@
 import { Router, Request, Response } from 'express';
 import { prisma } from '../config/db';
-import { createNewSender, getOrCreateDefaultSender } from '../services/emailService';
+import { createNewSender, getOrCreateDefaultSender, ensureMultipleSendersExist } from '../services/emailService';
 
 const router = Router();
 
-// GET /api/senders - List all senders
+// GET /api/senders - List all senders (guarantees multiple senders for demo)
 router.get('/', async (req: Request, res: Response) => {
   try {
+    await ensureMultipleSendersExist();
+
     let senders = await prisma.sender.findMany({
       orderBy: { createdAt: 'asc' },
     });
@@ -18,13 +20,19 @@ router.get('/', async (req: Request, res: Response) => {
 
     return res.json(senders);
   } catch (error: any) {
-    console.warn('Error fetching senders from DB, using fallback default sender:', error.message);
+    console.warn('Error fetching senders from DB, using fallback multi-senders:', error.message);
     return res.json([
       {
-        id: 'default_ethereal_sender',
-        name: 'Primary Ethereal Sender',
-        email: 'sender@ethereal.email',
+        id: 'primary_ethereal_sender',
+        name: 'Primary Ethereal Sender (Marketing)',
+        email: 'marketing.campaigns@ethereal.email',
         isDefault: true,
+      },
+      {
+        id: 'secondary_ethereal_sender',
+        name: 'Secondary Ethereal Sender (Outreach)',
+        email: 'outreach.leads@ethereal.email',
+        isDefault: false,
       },
     ]);
   }

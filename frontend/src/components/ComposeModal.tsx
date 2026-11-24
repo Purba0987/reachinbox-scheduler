@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Papa from 'papaparse';
 import { Sender } from '../types';
 import { senderApi, emailApi } from '../services/api';
-import { X, Upload, Sparkles, Send } from 'lucide-react';
+import { X, Upload, Sparkles, Send, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ComposeModalProps {
@@ -177,7 +177,10 @@ export const ComposeModal: React.FC<ComposeModalProps> = ({ isOpen, onClose, onS
               className="w-full bg-[#141724] border border-[#23283c] rounded-lg px-3.5 py-2 text-sm text-gray-200 focus:outline-none focus:border-indigo-500"
             >
               {senders.length === 0 ? (
-                <option value="">Primary Ethereal Sender (Default)</option>
+                <>
+                  <option value="primary_ethereal_sender">Primary Ethereal Sender (Marketing) • [Default]</option>
+                  <option value="secondary_ethereal_sender">Secondary Ethereal Sender (Outreach)</option>
+                </>
               ) : (
                 senders.map((s) => (
                   <option key={s.id} value={s.id}>
@@ -202,8 +205,8 @@ export const ComposeModal: React.FC<ComposeModalProps> = ({ isOpen, onClose, onS
             </div>
 
             {/* Drag & drop / upload area */}
-            <div className="flex items-center gap-3">
-              <label className="flex-1 flex items-center justify-center gap-2 p-3 bg-[#131622] hover:bg-[#181b2a] border border-dashed border-[#2a2f45] hover:border-indigo-500/50 rounded-xl cursor-pointer transition-all">
+            <div className="flex flex-col gap-2">
+              <label className="flex items-center justify-center gap-2 p-3.5 bg-[#131622] hover:bg-[#181b2a] border border-dashed border-[#2a2f45] hover:border-indigo-500/50 rounded-xl cursor-pointer transition-all">
                 <Upload className="w-4 h-4 text-indigo-400" />
                 <span className="text-xs font-medium text-gray-300">Click to upload leads (.csv, .txt)</span>
                 <input
@@ -213,6 +216,24 @@ export const ComposeModal: React.FC<ComposeModalProps> = ({ isOpen, onClose, onS
                   className="hidden"
                 />
               </label>
+
+              {detectedEmails.length > 0 && (
+                <div className="p-3 bg-emerald-950/40 border border-emerald-500/40 rounded-xl flex items-center justify-between animate-in fade-in">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    <span className="text-xs font-semibold text-emerald-300">
+                      {detectedEmails.length} recipient lead(s) successfully detected & ready to queue
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setDetectedEmails([])}
+                    className="text-[10px] text-slate-400 hover:text-white underline cursor-pointer"
+                  >
+                    Clear all
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Quick manual input */}

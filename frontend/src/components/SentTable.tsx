@@ -7,9 +7,17 @@ interface SentTableProps {
   jobs: EmailJob[];
   isLoading: boolean;
   onCompose?: () => void;
+  searchQuery?: string;
+  onClearFilter?: () => void;
 }
 
-export const SentTable: React.FC<SentTableProps> = ({ jobs, isLoading, onCompose }) => {
+export const SentTable: React.FC<SentTableProps> = ({ 
+  jobs, 
+  isLoading, 
+  onCompose,
+  searchQuery = '',
+  onClearFilter 
+}) => {
   if (isLoading) {
     return (
       <div className="w-full py-24 flex flex-col items-center justify-center gap-3 text-emerald-300">
@@ -20,6 +28,8 @@ export const SentTable: React.FC<SentTableProps> = ({ jobs, isLoading, onCompose
   }
 
   if (jobs.length === 0) {
+    const isFiltered = Boolean(searchQuery && searchQuery.trim().length > 0);
+
     return (
       <div className="w-full py-20 flex flex-col items-center justify-center text-center px-4 relative">
         {/* Glow behind illustration */}
@@ -40,13 +50,22 @@ export const SentTable: React.FC<SentTableProps> = ({ jobs, isLoading, onCompose
         </div>
 
         <h3 className="text-xl font-extrabold text-white mb-2 tracking-tight">
-          No Sent Emails Yet
+          {isFiltered ? 'No sent emails match these filters' : 'No Sent Emails Yet'}
         </h3>
         <p className="text-xs text-slate-400 max-w-md mb-6 leading-relaxed">
-          Emails sent by the BullMQ worker will show up here along with live Ethereal test preview links.
+          {isFiltered
+            ? `No sent emails match "${searchQuery}". Clear your search query to view all delivered emails.`
+            : 'Emails sent by the BullMQ worker will show up here along with live Ethereal test preview links.'}
         </p>
 
-        {onCompose && (
+        {isFiltered && onClearFilter ? (
+          <button
+            onClick={onClearFilter}
+            className="flex items-center gap-2 px-5 py-2.5 bg-[#142622] hover:bg-[#1c3630] text-emerald-200 border border-emerald-500/40 rounded-xl text-xs font-semibold shadow-lg hover:scale-105 active:scale-95 transition-all"
+          >
+            <span>Clear filters</span>
+          </button>
+        ) : onCompose ? (
           <button
             onClick={onCompose}
             className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold text-xs rounded-xl shadow-xl shadow-emerald-600/30 hover:scale-105 active:scale-95 transition-all"
@@ -55,7 +74,7 @@ export const SentTable: React.FC<SentTableProps> = ({ jobs, isLoading, onCompose
             <span>Compose New Email</span>
             <span>&rarr;</span>
           </button>
-        )}
+        ) : null}
       </div>
     );
   }

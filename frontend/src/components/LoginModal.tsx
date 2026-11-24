@@ -26,18 +26,18 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
   const handleDemoSignIn = async () => {
     try {
       await loginWithGoogle(undefined, {
-        email: 'developer@reachinbox.ai',
-        name: 'ReachInbox Developer',
+        email: 'purba@gmail.com',
+        name: 'Purba Hanra',
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
         sub: 'google_dev_demo_123',
       });
-      toast.success('Signed in as ReachInbox Developer');
+      toast.success('Signed in as Purba Hanra');
     } catch {
       // Instant local login fallback so user is never blocked
       const fallbackUser = {
         id: 'dev_reachinbox_demo',
-        email: 'developer@reachinbox.ai',
-        name: 'ReachInbox Developer',
+        email: 'purba@gmail.com',
+        name: 'Purba Hanra',
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
         hasSlack: false,
       };

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useAuth } from '../context/AuthContext';
 import { 
   Home, 
   Calendar, 
@@ -13,7 +14,7 @@ import {
   Rocket, 
   Mail,
   ArrowRight,
-  ChevronDown
+  LogOut
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -35,6 +36,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenSlack,
   onToggleLanding
 }) => {
+  const { user, logout } = useAuth();
   return (
     <aside className="w-64 bg-[#0a0c18] border-r border-[#191b30] flex flex-col justify-between p-4 flex-shrink-0 min-h-screen text-slate-300 select-none">
       <div className="space-y-6">
@@ -208,20 +210,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
         </div>
 
-        {/* Bottom User Profile Bar matching Image 1 */}
+        {/* Bottom User Profile Bar - Fully synced with Header & useAuth */}
         <div className="pt-3 border-t border-[#181a32] flex items-center justify-between px-1">
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 min-w-0">
             <img
-              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
-              alt="Purba Hanra"
-              className="w-8 h-8 rounded-full border border-purple-500/40 object-cover"
+              src={user?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"}
+              alt={user?.name || 'User'}
+              className="w-8 h-8 rounded-full border border-purple-500/40 object-cover flex-shrink-0"
             />
-            <div className="text-left">
-              <p className="text-xs font-bold text-white leading-tight">Purba Hanra</p>
-              <p className="text-[10px] text-slate-400 leading-tight">purba@gmail.com</p>
+            <div className="text-left min-w-0">
+              <p className="text-xs font-bold text-white leading-tight truncate">{user?.name || 'Purba Hanra'}</p>
+              <p className="text-[10px] text-slate-400 leading-tight truncate">{user?.email || 'purba@gmail.com'}</p>
             </div>
           </div>
-          <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+          <button
+            onClick={logout}
+            title="Log Out"
+            className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-950/20 rounded-lg transition-colors"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+          </button>
         </div>
       </div>
     </aside>

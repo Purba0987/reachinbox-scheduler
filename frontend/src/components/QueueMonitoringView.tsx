@@ -26,21 +26,27 @@ interface QueueMonitoringViewProps {
 }
 
 export const QueueMonitoringView: React.FC<QueueMonitoringViewProps> = ({ 
-  recentJobs = [] 
+  recentJobs = [],
+  onRefresh 
 }) => {
+  const activeCount = recentJobs.filter(j => j.status === 'PROCESSING').length;
+  const completedCount = recentJobs.filter(j => j.status === 'SENT').length;
+  const failedCount = recentJobs.filter(j => j.status === 'FAILED').length;
+  const delayedCount = recentJobs.filter(j => j.status === 'SCHEDULED' || j.status === 'RATE_LIMITED').length;
+
   const [queueStats, setQueueStats] = useState({
     queueName: 'email-send-queue',
     connection: 'Healthy',
-    totalJobs: 19,
-    workers: 2,
-    rateLimit: '200 jobs/hour',
+    totalJobs: recentJobs.length || 0,
+    workers: 5,
+    rateLimit: '5 jobs/hour',
     minDelay: '2 seconds',
     counts: {
-      active: 12,
-      waiting: 248,
-      delayed: 36,
-      completed: '11.2K',
-      failed: 8,
+      active: activeCount,
+      waiting: 0,
+      delayed: delayedCount,
+      completed: completedCount,
+      failed: failedCount,
       paused: 0,
     },
   });
@@ -52,21 +58,37 @@ export const QueueMonitoringView: React.FC<QueueMonitoringViewProps> = ({
 
   const fetchStats = async () => {
     setIsRefreshing(true);
+    if (onRefresh) onRefresh();
     try {
       const res = await axios.get(`${apiBase}/queue/stats`);
       if (res.data) {
         setQueueStats({
           ...res.data,
+          totalJobs: res.data.totalJobs ?? recentJobs.length,
           counts: {
-            ...res.data.counts,
-            completed: res.data.counts?.completed > 1000 
-              ? `${(res.data.counts.completed / 1000).toFixed(1)}K` 
-              : (res.data.counts?.completed || '11.2K'),
+            active: res.data.counts?.active ?? activeCount,
+            waiting: res.data.counts?.waiting ?? 0,
+            delayed: res.data.counts?.delayed ?? delayedCount,
+            completed: res.data.counts?.completed ?? completedCount,
+            failed: res.data.counts?.failed ?? failedCount,
+            paused: res.data.counts?.paused ?? 0,
           }
         });
       }
     } catch {
-      // Keep beautiful visual defaults
+      // Use live job array stats
+      setQueueStats(prev => ({
+        ...prev,
+        totalJobs: recentJobs.length,
+        counts: {
+          active: recentJobs.filter(j => j.status === 'PROCESSING').length,
+          waiting: 0,
+          delayed: recentJobs.filter(j => j.status === 'SCHEDULED' || j.status === 'RATE_LIMITED').length,
+          completed: recentJobs.filter(j => j.status === 'SENT').length,
+          failed: recentJobs.filter(j => j.status === 'FAILED').length,
+          paused: 0,
+        }
+      }));
     } finally {
       setTimeout(() => setIsRefreshing(false), 400);
     }
@@ -528,117 +550,77 @@ export const QueueMonitoringView: React.FC<QueueMonitoringViewProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-[#1b1e3d]">
-              {/* Static Reference Jobs matching Image 1 */}
-              <tr className="hover:bg-[#151836] transition-colors">
-                <td className="py-3.5 px-4 font-mono text-purple-300 font-bold">#12345</td>
-                <td className="py-3.5 px-4 font-semibold text-white">john@example.com</td>
-                <td className="py-3.5 px-4 text-slate-300 max-w-xs truncate">Product Update</td>
-                <td className="py-3.5 px-4">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                    <span>✓</span> Completed
-                  </span>
-                </td>
-                <td className="py-3.5 px-4 text-slate-300">Dec 25, 2026 • 10:30 AM</td>
-                <td className="py-3.5 px-4 text-slate-300">Dec 25, 2026 • 10:30 AM</td>
-                <td className="py-3.5 px-4 text-right">
-                  <button className="p-1.5 text-slate-400 hover:text-purple-300 hover:bg-[#1c1e40] rounded-lg transition-colors">
-                    <Eye className="w-4 h-4" />
-                  </button>
-                </td>
-              </tr>
-
-              <tr className="hover:bg-[#151836] transition-colors">
-                <td className="py-3.5 px-4 font-mono text-purple-300 font-bold">#12344</td>
-                <td className="py-3.5 px-4 font-semibold text-white">alice@example.com</td>
-                <td className="py-3.5 px-4 text-slate-300 max-w-xs truncate">Special Offer</td>
-                <td className="py-3.5 px-4">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">
-                    <span>►</span> Active
-                  </span>
-                </td>
-                <td className="py-3.5 px-4 text-slate-300">Dec 25, 2026 • 10:45 AM</td>
-                <td className="py-3.5 px-4 text-slate-500">—</td>
-                <td className="py-3.5 px-4 text-right">
-                  <button className="p-1.5 text-slate-400 hover:text-purple-300 hover:bg-[#1c1e40] rounded-lg transition-colors">
-                    <Eye className="w-4 h-4" />
-                  </button>
-                </td>
-              </tr>
-
-              <tr className="hover:bg-[#151836] transition-colors">
-                <td className="py-3.5 px-4 font-mono text-purple-300 font-bold">#12343</td>
-                <td className="py-3.5 px-4 font-semibold text-white">demo@test.com</td>
-                <td className="py-3.5 px-4 text-slate-300 max-w-xs truncate">Welcome Email</td>
-                <td className="py-3.5 px-4">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">
-                    <span>✗</span> Failed
-                  </span>
-                </td>
-                <td className="py-3.5 px-4 text-slate-300">Dec 25, 2026 • 11:00 AM</td>
-                <td className="py-3.5 px-4 text-slate-300">Dec 25, 2026 • 11:00 AM</td>
-                <td className="py-3.5 px-4 text-right">
-                  <button className="p-1.5 text-slate-400 hover:text-purple-300 hover:bg-[#1c1e40] rounded-lg transition-colors">
-                    <Eye className="w-4 h-4" />
-                  </button>
-                </td>
-              </tr>
-
-              {/* Dynamic Jobs from DB */}
-              {filteredJobs.map((job) => (
-                <tr key={job.id} className="hover:bg-[#151836] transition-colors">
-                  <td className="py-3.5 px-4 font-mono text-purple-300 font-bold">
-                    #{job.id.substring(0, 5)}
-                  </td>
-                  <td className="py-3.5 px-4 font-semibold text-white">
-                    {job.recipientEmail}
-                  </td>
-                  <td className="py-3.5 px-4 text-slate-300 max-w-xs truncate" title={job.subject}>
-                    {job.subject}
-                  </td>
-                  <td className="py-3.5 px-4">
-                    {job.status === 'SENT' ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                        <span>✓</span> Completed
-                      </span>
-                    ) : job.status === 'FAILED' ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">
-                        <span>✗</span> Failed
-                      </span>
-                    ) : job.status === 'PROCESSING' ? (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">
-                        <span>►</span> Active
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                        <span>⏳</span> Delayed
-                      </span>
-                    )}
-                  </td>
-                  <td className="py-3.5 px-4 text-slate-300 whitespace-nowrap">
-                    {job.scheduledAt ? new Date(job.scheduledAt).toLocaleDateString() : '—'}
-                  </td>
-                  <td className="py-3.5 px-4 text-slate-300 whitespace-nowrap">
-                    {job.sentAt ? new Date(job.sentAt).toLocaleDateString() : '—'}
-                  </td>
-                  <td className="py-3.5 px-4 text-right">
-                    {job.previewUrl ? (
-                      <a
-                        href={job.previewUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-1.5 text-purple-400 hover:text-purple-200 inline-block"
-                        title="View preview"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </a>
-                    ) : (
-                      <span className="p-1.5 text-slate-600 inline-block">
-                        <Eye className="w-4 h-4" />
-                      </span>
-                    )}
+              {filteredJobs.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-12 text-center text-slate-400">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <Layers className="w-8 h-8 text-purple-400/50 mb-1" />
+                      <p className="text-sm font-semibold text-white">No Jobs in Queue</p>
+                      <p className="text-xs text-slate-500">
+                        {searchQuery ? `No jobs match "${searchQuery}"` : "Schedule an email using 'Compose New Email' to see live queue processing."}
+                      </p>
+                    </div>
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filteredJobs.map((job) => (
+                  <tr key={job.id} className="hover:bg-[#151836] transition-colors">
+                    <td className="py-3.5 px-4 font-mono text-purple-300 font-bold">
+                      #{job.id.substring(0, 6)}
+                    </td>
+                    <td className="py-3.5 px-4 font-semibold text-white">
+                      {job.recipientEmail}
+                    </td>
+                    <td className="py-3.5 px-4 text-slate-300 max-w-xs truncate" title={job.subject}>
+                      {job.subject}
+                    </td>
+                    <td className="py-3.5 px-4">
+                      {job.status === 'SENT' ? (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                          <span>✓</span> Completed
+                        </span>
+                      ) : job.status === 'FAILED' ? (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                          <span>✗</span> Failed
+                        </span>
+                      ) : job.status === 'PROCESSING' ? (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                          <span>►</span> Active
+                        </span>
+                      ) : job.status === 'RATE_LIMITED' ? (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                          <span>⏱</span> Rescheduled
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                          <span>⏳</span> Delayed
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-3.5 px-4 text-slate-300 whitespace-nowrap">
+                      {job.scheduledAt ? new Date(job.scheduledAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '—'}
+                    </td>
+                    <td className="py-3.5 px-4 text-slate-300 whitespace-nowrap">
+                      {job.sentAt ? new Date(job.sentAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : (job.status === 'PROCESSING' ? 'Processing now...' : '—')}
+                    </td>
+                    <td className="py-3.5 px-4 text-right">
+                      {job.previewUrl ? (
+                        <a
+                          href={job.previewUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-1.5 text-purple-400 hover:text-purple-200 inline-block"
+                          title="View Ethereal Preview"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </a>
+                      ) : (
+                        <span className="p-1.5 text-slate-600 inline-block">—</span>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

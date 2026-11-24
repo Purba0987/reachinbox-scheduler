@@ -8,13 +8,17 @@ interface ScheduledTableProps {
   isLoading: boolean;
   onCancelJob: (id: string) => void;
   onCompose?: () => void;
+  searchQuery?: string;
+  onClearFilter?: () => void;
 }
 
 export const ScheduledTable: React.FC<ScheduledTableProps> = ({ 
   jobs, 
   isLoading, 
   onCancelJob,
-  onCompose 
+  onCompose,
+  searchQuery = '',
+  onClearFilter
 }) => {
   if (isLoading) {
     return (
@@ -26,6 +30,8 @@ export const ScheduledTable: React.FC<ScheduledTableProps> = ({
   }
 
   if (jobs.length === 0) {
+    const isFiltered = Boolean(searchQuery && searchQuery.trim().length > 0);
+
     return (
       <div className="w-full py-20 flex flex-col items-center justify-center text-center px-4 relative">
         {/* Glow behind illustration */}
@@ -50,14 +56,23 @@ export const ScheduledTable: React.FC<ScheduledTableProps> = ({
 
         {/* Heading & Subtitle */}
         <h3 className="text-xl font-extrabold text-white mb-2 tracking-tight">
-          No Scheduled Emails
+          {isFiltered ? 'No emails match these filters' : 'No Scheduled Emails'}
         </h3>
         <p className="text-xs text-slate-400 max-w-md mb-6 leading-relaxed">
-          You haven't scheduled any emails yet. Click "Compose New Email" to start your first campaign.
+          {isFiltered 
+            ? `No scheduled emails match "${searchQuery}". Clear your search filters to view all scheduled campaigns.`
+            : "You haven't scheduled any emails yet. Click \"Compose New Email\" to start your first campaign."}
         </p>
 
-        {/* Compose CTA Button */}
-        {onCompose && (
+        {/* Filter Clear or Compose CTA Button */}
+        {isFiltered && onClearFilter ? (
+          <button
+            onClick={onClearFilter}
+            className="flex items-center gap-2 px-5 py-2.5 bg-[#181a38] hover:bg-[#20234a] text-purple-200 border border-purple-500/40 rounded-xl text-xs font-semibold shadow-lg hover:scale-105 active:scale-95 transition-all"
+          >
+            <span>Clear filters</span>
+          </button>
+        ) : onCompose ? (
           <button
             onClick={onCompose}
             className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold text-xs rounded-xl shadow-xl shadow-purple-600/30 hover:scale-105 active:scale-95 transition-all"
@@ -66,7 +81,7 @@ export const ScheduledTable: React.FC<ScheduledTableProps> = ({
             <span>Compose New Email</span>
             <span>&rarr;</span>
           </button>
-        )}
+        ) : null}
       </div>
     );
   }
