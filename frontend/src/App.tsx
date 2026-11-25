@@ -35,8 +35,8 @@ export const App: React.FC = () => {
     return localStorage.getItem('reachinbox_user') ? 'dashboard' : 'landing';
   });
 
-  // Tab State: 'queue' | 'scheduled' | 'sent' | 'campaigns' | 'analytics' | 'settings'
-  const [activeTab, setActiveTab] = useState<'queue' | 'scheduled' | 'sent' | 'campaigns' | 'analytics' | 'settings'>('queue');
+  // Tab State: 'queue' | 'scheduled' | 'sent' | 'failed' | 'campaigns' | 'analytics' | 'settings'
+  const [activeTab, setActiveTab] = useState<'queue' | 'scheduled' | 'sent' | 'failed' | 'campaigns' | 'analytics' | 'settings'>('queue');
 
   // Search State
   const [searchQuery, setSearchQuery] = useState('');
@@ -48,7 +48,6 @@ export const App: React.FC = () => {
   const [isLoadingScheduled, setIsLoadingScheduled] = useState(true);
   const [isLoadingSent, setIsLoadingSent] = useState(true);
   const [scheduledCount, setScheduledCount] = useState(0);
-  const [sentCount, setSentCount] = useState(0);
 
   // Modals
   const [isComposeOpen, setIsComposeOpen] = useState(false);
@@ -74,9 +73,8 @@ export const App: React.FC = () => {
   // Fetch Sent Jobs
   const fetchSent = useCallback(async (query = searchQuery) => {
     try {
-      const res = await emailApi.getSent(1, 50, query);
+      const res = await emailApi.getSent(1, 100, query);
       setSentJobs(res.data);
-      setSentCount(res.total);
     } catch (err: any) {
       console.error('Failed to fetch sent jobs:', err.message);
     } finally {
@@ -148,7 +146,10 @@ export const App: React.FC = () => {
   };
 
   const isShowingLanding = !user || viewMode === 'landing';
-  const failedJobsCount = sentJobs.filter((j) => j.status === 'FAILED').length;
+  const actualSentJobs = sentJobs.filter((j) => j.status === 'SENT');
+  const actualFailedJobs = sentJobs.filter((j) => j.status === 'FAILED');
+  const sentJobsCount = actualSentJobs.length;
+  const failedJobsCount = actualFailedJobs.length;
 
   return (
     <div className="min-h-screen bg-[#070914] text-slate-200 flex font-sans selection:bg-purple-600 selection:text-white">
@@ -181,7 +182,7 @@ export const App: React.FC = () => {
             activeTab={activeTab}
             onSelectTab={(tab) => setActiveTab(tab)}
             scheduledCount={scheduledCount}
-            sentCount={sentCount}
+            sentCount={sentJobsCount}
             failedCount={failedJobsCount}
             onOpenSlack={() => setIsSlackOpen(true)}
             onToggleLanding={() => setViewMode('landing')}
@@ -233,19 +234,41 @@ export const App: React.FC = () => {
                   {/* 1. Hero Section Header Banner matching Image 1 */}
                   <div className="relative rounded-2xl p-6 sm:p-7 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 overflow-hidden">
                     <div className="flex items-center gap-4 z-10">
-                      {/* Calendar Icon in Glowing Purple Box */}
-                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-purple-700 via-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-xl shadow-purple-600/30 flex-shrink-0">
-                        <Calendar className="w-7 h-7" />
+                      {/* Calendar / Send / Alert Icon in Glowing Box */}
+                      <div className={`w-14 h-14 rounded-2xl ${
+                        activeTab === 'failed'
+                          ? 'bg-gradient-to-tr from-rose-700 via-rose-600 to-pink-600 shadow-rose-600/30'
+                          : activeTab === 'sent'
+                          ? 'bg-gradient-to-tr from-emerald-700 via-emerald-600 to-teal-600 shadow-emerald-600/30'
+                          : 'bg-gradient-to-tr from-purple-700 via-purple-600 to-indigo-600 shadow-purple-600/30'
+                      } flex items-center justify-center text-white shadow-xl flex-shrink-0`}>
+                        {activeTab === 'failed' ? (
+                          <AlertTriangle className="w-7 h-7" />
+                        ) : activeTab === 'sent' ? (
+                          <Send className="w-7 h-7" />
+                        ) : (
+                          <Calendar className="w-7 h-7" />
+                        )}
                       </div>
                       <div>
                         <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-2">
-                          <span>{activeTab === 'scheduled' ? 'Scheduled' : 'Sent'}</span>
-                          <span className="bg-gradient-to-r from-purple-400 to-indigo-300 bg-clip-text text-transparent">
+                          <span>{activeTab === 'scheduled' ? 'Scheduled' : activeTab === 'failed' ? 'Failed' : 'Sent'}</span>
+                          <span className={`bg-gradient-to-r ${
+                            activeTab === 'failed'
+                              ? 'from-rose-400 to-pink-300'
+                              : activeTab === 'sent'
+                              ? 'from-emerald-400 to-teal-300'
+                              : 'from-purple-400 to-indigo-300'
+                          } bg-clip-text text-transparent`}>
                             Emails
                           </span>
                         </h1>
                         <p className="text-xs sm:text-sm text-slate-400 mt-1">
-                          Manage your upcoming email sends and keep track of your campaigns.
+                          {activeTab === 'scheduled'
+                            ? 'Manage your upcoming email sends and keep track of your campaigns.'
+                            : activeTab === 'failed'
+                            ? 'Inspect failed email deliveries, error logs, and reasons.'
+                            : 'Review delivered emails and preview sent messages on Ethereal.'}
                         </p>
                       </div>
                     </div>
@@ -281,7 +304,10 @@ export const App: React.FC = () => {
                   {/* 2. 4 Stat / Metric Cards */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {/* Stat Card 1: Scheduled Emails */}
-                    <div className="p-5 rounded-2xl bg-[#0e1022]/80 border border-[#1f2244] shadow-lg relative overflow-hidden group hover:border-purple-500/40 transition-all">
+                    <div 
+                      onClick={() => setActiveTab('scheduled')}
+                      className="cursor-pointer p-5 rounded-2xl bg-[#0e1022]/80 border border-[#1f2244] shadow-lg relative overflow-hidden group hover:border-purple-500/40 transition-all"
+                    >
                       <div className="flex items-center justify-between mb-3">
                         <div className="w-10 h-10 rounded-xl bg-purple-600/20 text-purple-400 flex items-center justify-center">
                           <Mail className="w-5 h-5" />
@@ -304,7 +330,10 @@ export const App: React.FC = () => {
                     </div>
 
                     {/* Stat Card 2: Sent Emails */}
-                    <div className="p-5 rounded-2xl bg-[#0e1022]/80 border border-[#1f2244] shadow-lg relative overflow-hidden group hover:border-emerald-500/40 transition-all">
+                    <div 
+                      onClick={() => setActiveTab('sent')}
+                      className="cursor-pointer p-5 rounded-2xl bg-[#0e1022]/80 border border-[#1f2244] shadow-lg relative overflow-hidden group hover:border-emerald-500/40 transition-all"
+                    >
                       <div className="flex items-center justify-between mb-3">
                         <div className="w-10 h-10 rounded-xl bg-emerald-600/20 text-emerald-400 flex items-center justify-center">
                           <Send className="w-5 h-5" />
@@ -315,7 +344,7 @@ export const App: React.FC = () => {
                       </div>
                       <div className="space-y-0.5">
                         <h3 className="text-2xl font-black text-white tracking-tight">
-                          {sentCount}
+                          {sentJobsCount}
                         </h3>
                         <p className="text-xs text-slate-400">Sent Emails</p>
                       </div>
@@ -327,7 +356,10 @@ export const App: React.FC = () => {
                     </div>
 
                     {/* Stat Card 3: Failed Emails */}
-                    <div className="p-5 rounded-2xl bg-[#0e1022]/80 border border-[#1f2244] shadow-lg relative overflow-hidden group hover:border-rose-500/40 transition-all">
+                    <div 
+                      onClick={() => setActiveTab('failed')}
+                      className="cursor-pointer p-5 rounded-2xl bg-[#0e1022]/80 border border-[#1f2244] shadow-lg relative overflow-hidden group hover:border-rose-500/40 transition-all"
+                    >
                       <div className="flex items-center justify-between mb-3">
                         <div className="w-10 h-10 rounded-xl bg-rose-600/20 text-rose-400 flex items-center justify-center">
                           <AlertTriangle className="w-5 h-5" />
@@ -361,7 +393,7 @@ export const App: React.FC = () => {
                       </div>
                       <div className="space-y-0.5">
                         <h3 className="text-2xl font-black text-white tracking-tight">
-                          {scheduledCount + sentCount}
+                          {scheduledCount + sentJobsCount + failedJobsCount}
                         </h3>
                         <p className="text-xs text-slate-400">Total Email Jobs</p>
                       </div>
@@ -396,14 +428,29 @@ export const App: React.FC = () => {
                         onClick={() => setActiveTab('sent')}
                         className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
                           activeTab === 'sent'
-                            ? 'bg-[#1b193d] text-purple-200 border border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.25)]'
+                            ? 'bg-[#1b193d] text-emerald-200 border border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.25)] font-bold'
                             : 'bg-[#0e1022] text-slate-400 border border-[#1c1f38] hover:text-white'
                         }`}
                       >
                         <Send className="w-3.5 h-3.5 text-emerald-400" />
                         <span>Sent Emails</span>
                         <span className="text-[10px] px-2 py-0.2 rounded-full font-bold bg-emerald-600/20 text-emerald-300 border border-emerald-400/30">
-                          {sentCount}
+                          {sentJobsCount}
+                        </span>
+                      </button>
+
+                      <button
+                        onClick={() => setActiveTab('failed')}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+                          activeTab === 'failed'
+                            ? 'bg-[#2a131b] text-rose-200 border border-rose-500/50 shadow-[0_0_15px_rgba(244,63,94,0.25)] font-bold'
+                            : 'bg-[#0e1022] text-slate-400 border border-[#1c1f38] hover:text-white'
+                        }`}
+                      >
+                        <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
+                        <span>Failed Emails</span>
+                        <span className="text-[10px] px-2 py-0.2 rounded-full font-bold bg-rose-600/20 text-rose-300 border border-rose-400/30">
+                          {failedJobsCount}
                         </span>
                       </button>
                     </div>
@@ -454,13 +501,23 @@ export const App: React.FC = () => {
                         searchQuery={searchQuery}
                         onClearFilter={() => setSearchQuery('')}
                       />
-                    ) : (
+                    ) : activeTab === 'failed' ? (
                       <SentTable
-                        jobs={sentJobs}
+                        jobs={actualFailedJobs}
                         isLoading={isLoadingSent}
                         onCompose={() => setIsComposeOpen(true)}
                         searchQuery={searchQuery}
                         onClearFilter={() => setSearchQuery('')}
+                        isFailedView={true}
+                      />
+                    ) : (
+                      <SentTable
+                        jobs={actualSentJobs}
+                        isLoading={isLoadingSent}
+                        onCompose={() => setIsComposeOpen(true)}
+                        searchQuery={searchQuery}
+                        onClearFilter={() => setSearchQuery('')}
+                        isFailedView={false}
                       />
                     )}
                   </div>

@@ -19,7 +19,7 @@ import {
 
 interface SidebarProps {
   activeTab: 'queue' | 'scheduled' | 'sent' | 'failed' | 'overview' | 'campaigns' | 'analytics' | 'settings';
-  onSelectTab: (tab: 'queue' | 'scheduled' | 'sent' | 'campaigns' | 'analytics' | 'settings') => void;
+  onSelectTab: (tab: 'queue' | 'scheduled' | 'sent' | 'failed' | 'campaigns' | 'analytics' | 'settings') => void;
   scheduledCount: number;
   sentCount: number;
   failedCount?: number;
@@ -111,12 +111,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
 
           <button
-            onClick={() => onSelectTab('sent')}
-            className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-[#121426] transition-all"
+            onClick={() => onSelectTab('failed')}
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+              activeTab === 'failed'
+                ? 'bg-[#2a131b] text-rose-200 border border-rose-500/40 shadow-[0_0_15px_rgba(244,63,94,0.15)] font-bold'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-[#121426]'
+            }`}
           >
             <div className="flex items-center gap-3">
               <AlertTriangle className="w-4 h-4 text-rose-400" />
-              <span>Failed Emails</span>
+              <span className={activeTab === 'failed' ? 'text-white' : ''}>Failed Emails</span>
             </div>
             {failedCount > 0 && (
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-600/20 text-rose-300 border border-rose-500/30">

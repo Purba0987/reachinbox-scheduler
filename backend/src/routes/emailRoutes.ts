@@ -196,9 +196,13 @@ router.get('/sent', async (req: Request, res: Response) => {
     }
 
     const skip = (page - 1) * limit;
-    const where = {
-      status: { in: ['SENT', 'FAILED'] as any },
-    };
+    const statusParam = (req.query.status as string) || '';
+    const where: any = {};
+    if (statusParam && ['SENT', 'FAILED'].includes(statusParam.toUpperCase())) {
+      where.status = statusParam.toUpperCase();
+    } else {
+      where.status = { in: ['SENT', 'FAILED'] as any };
+    }
 
     const [total, data] = await Promise.all([
       prisma.emailJob.count({ where }),
