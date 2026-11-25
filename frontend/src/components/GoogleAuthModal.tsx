@@ -19,9 +19,12 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({ isOpen, onClos
   const [customName, setCustomName] = useState('');
   const [emailError, setEmailError] = useState<string | null>(null);
 
+  const rawClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  const hasRealGoogleClientId = !!rawClientId && rawClientId.trim() !== '' && !rawClientId.includes('dummy');
+
   if (!isOpen) return null;
 
-  // 1. Real Google OAuth Token Callback
+  // 1. Real Google OAuth Token Callback (only when real Client ID is set)
   const handleGoogleSuccess = async (credentialResponse: any) => {
     try {
       await loginWithGoogle(credentialResponse.credential);
@@ -34,14 +37,31 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({ isOpen, onClos
     }
   };
 
-  // 2. Quick Demo Account Sign-In
+  // 2. Direct Google Sign-In for Purba Hanra (purbahanra@gmail.com)
+  const handleSelectPrimaryAccount = async () => {
+    try {
+      await loginWithGoogle(undefined, {
+        email: 'purbahanra@gmail.com',
+        name: 'Purba Hanra',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
+        sub: 'google_purbahanra_primary',
+      });
+      toast.success('Signed in as Purba Hanra (purbahanra@gmail.com)');
+      onSuccess();
+      onClose();
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Failed to sign in. Please try again.');
+    }
+  };
+
+  // 3. Quick Demo Account Sign-In (purba@gmail.com)
   const handleSelectDemoAccount = async () => {
     try {
       await loginWithGoogle(undefined, {
         email: 'purba@gmail.com',
         name: 'Purba Hanra',
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
-        sub: 'google_purba_hanra_oauth',
+        sub: 'google_purba_demo',
       });
       toast.success('Signed in as Purba Hanra (purba@gmail.com)');
       onSuccess();
@@ -51,7 +71,7 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({ isOpen, onClos
     }
   };
 
-  // 3. 3rd-Party Google Sign-In / Sign-Up
+  // 4. 3rd-Party Google Sign-In / Sign-Up
   const handleCustomGoogleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setEmailError(null);
@@ -111,7 +131,7 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({ isOpen, onClos
                 Sign in with Google
               </h3>
               <p className="text-xs text-slate-400">
-                Choose an account or sign in as a new user
+                Choose an account to continue to ReachInbox
               </p>
             </div>
           </div>
@@ -124,33 +144,35 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({ isOpen, onClos
           </button>
         </div>
 
-        {/* Real Google OAuth Component (If client ID is configured) */}
-        <div className="flex justify-center mb-4">
-          <GoogleLogin
-            onSuccess={handleGoogleSuccess}
-            onError={() => {
-              // Silently allow direct account selection
-            }}
-            useOneTap
-            shape="pill"
-            theme="filled_black"
-            text="signin_with"
-          />
-        </div>
+        {/* Real Google OAuth Component (Only if valid Google Client ID is configured) */}
+        {hasRealGoogleClientId && (
+          <div className="flex justify-center mb-4">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => {
+                // Silently allow direct account selection
+              }}
+              useOneTap
+              shape="pill"
+              theme="filled_black"
+              text="signin_with"
+            />
+          </div>
+        )}
 
         {mode === 'chooser' ? (
           /* ======================================================== */
           /* Account Chooser View                                     */
           /* ======================================================== */
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider pl-1">
-              Select Account
+              Select Your Google Account
             </p>
 
-            {/* Account 1: Demo / Primary User */}
+            {/* Account 1: Purba Hanra (purbahanra@gmail.com) */}
             <div
-              onClick={handleSelectDemoAccount}
-              className="p-3.5 rounded-2xl bg-[#12142d] hover:bg-[#181b3c] border border-purple-500/20 hover:border-purple-500/50 cursor-pointer transition-all flex items-center justify-between group"
+              onClick={handleSelectPrimaryAccount}
+              className="p-3.5 rounded-2xl bg-[#12142d] hover:bg-[#181b3c] border border-purple-500/30 hover:border-purple-500/60 cursor-pointer transition-all flex items-center justify-between group"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <img
@@ -163,20 +185,41 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({ isOpen, onClos
                     <p className="text-xs font-bold text-white group-hover:text-purple-300 transition-colors truncate">
                       Purba Hanra
                     </p>
-                    <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-purple-600/20 text-purple-300 border border-purple-500/30">
-                      Demo
+                    <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-purple-600/25 text-purple-200 border border-purple-500/30">
+                      Primary
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-400 truncate">purba@gmail.com</p>
+                  <p className="text-[11px] text-slate-400 truncate">purbahanra@gmail.com</p>
                 </div>
               </div>
               <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-purple-400 transition-colors ml-2" />
             </div>
 
-            {/* Account 2: Any 3rd Person / Reviewer / New User */}
+            {/* Account 2: Purba Hanra Demo (purba@gmail.com) */}
+            <div
+              onClick={handleSelectDemoAccount}
+              className="p-3 rounded-2xl bg-[#12142d]/70 hover:bg-[#181b3c] border border-[#1f2244] hover:border-purple-500/40 cursor-pointer transition-all flex items-center justify-between group"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-9 h-9 rounded-full bg-purple-600/20 text-purple-300 border border-purple-500/30 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                  PH
+                </div>
+                <div className="text-left min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs font-semibold text-slate-300 group-hover:text-white transition-colors truncate">
+                      Purba Hanra (Demo Account)
+                    </p>
+                  </div>
+                  <p className="text-[10px] text-slate-400 truncate">purba@gmail.com</p>
+                </div>
+              </div>
+              <ArrowRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-purple-400 transition-colors ml-2" />
+            </div>
+
+            {/* Account 3: Any 3rd Person / Reviewer / New User */}
             <div
               onClick={() => setMode('custom')}
-              className="p-3.5 rounded-2xl bg-[#12142d] hover:bg-[#181b3c] border border-purple-500/20 hover:border-purple-500/50 cursor-pointer transition-all flex items-center justify-between group"
+              className="p-3.5 rounded-2xl bg-[#12142d] hover:bg-[#181b3c] border border-purple-500/20 hover:border-purple-500/50 cursor-pointer transition-all flex items-center justify-between group mt-1"
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-700/60 to-indigo-700/60 flex items-center justify-center text-purple-200 border border-purple-500/40 flex-shrink-0">
@@ -195,7 +238,7 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({ isOpen, onClos
             </div>
 
             <p className="text-[10px] text-slate-500 text-center pt-2">
-              Authenticates via Google API endpoint <code className="text-purple-300">/api/auth/google</code> and stores user persistently in PostgreSQL database.
+              Authenticates securely via <code className="text-purple-300">/api/auth/google</code> and creates persistent PostgreSQL user profiles.
             </p>
           </div>
         ) : (
