@@ -20,6 +20,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { GoogleAuthModal } from './GoogleAuthModal';
 
 interface LandingPageProps {
   onOpenDashboard: () => void;
@@ -39,6 +40,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDemoVideoOpen, setIsDemoVideoOpen] = useState(false);
+  const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
 
   const scrollToAuthCard = () => {
     const card = document.getElementById('auth-card');
@@ -50,25 +52,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    setIsSubmitting(true);
-    try {
-      // Actively authenticate via backend POST /api/auth/google
-      await loginWithGoogle(undefined, {
-        email: 'purba@gmail.com',
-        name: 'Purba Hanra',
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
-        sub: 'google_purba_hanra_oauth',
-      });
-      toast.success('Successfully authenticated with Google!');
-      setTimeout(() => {
-        onOpenDashboard();
-      }, 250);
-    } catch (err: any) {
-      toast.error(err.response?.data?.error || 'Google authentication failed. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
+  const handleGoogleSignIn = () => {
+    setIsGoogleModalOpen(true);
   };
 
   const handleDemoSignIn = async () => {
@@ -799,6 +784,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
         </div>
       )}
+
+      {/* Google Sign-In & Account Chooser Modal (supports 3rd-party users & demo) */}
+      <GoogleAuthModal
+        isOpen={isGoogleModalOpen}
+        onClose={() => setIsGoogleModalOpen(false)}
+        onSuccess={onOpenDashboard}
+      />
     </div>
   );
 };

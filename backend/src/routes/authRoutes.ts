@@ -91,21 +91,40 @@ router.post('/google', async (req: Request, res: Response) => {
         });
         const payload = ticket.getPayload();
         if (payload && payload.email) {
-          email = payload.email;
+          email = payload.email.trim().toLowerCase();
           name = payload.name || payload.email.split('@')[0];
           avatar = payload.picture || '';
           googleId = payload.sub;
         }
       } catch (err: any) {
-        console.warn('Google idToken verification skipped/failed (using direct profile if provided):', err.message);
+        console.warn('Google idToken verification skipped/failed (decoding JWT payload):', err.message);
+      }
+
+      // Fallback: Decode Google JWT token payload directly
+      if (!email && typeof credential === 'string') {
+        try {
+          const parts = credential.split('.');
+          if (parts.length === 3) {
+            const payloadBase64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+            const decoded = JSON.parse(Buffer.from(payloadBase64, 'base64').toString('utf-8'));
+            if (decoded && decoded.email) {
+              email = decoded.email.trim().toLowerCase();
+              name = decoded.name || decoded.email.split('@')[0];
+              avatar = decoded.picture || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`;
+              googleId = decoded.sub || `google_${Date.now()}`;
+            }
+          }
+        } catch (jwtErr: any) {
+          console.warn('Failed to parse Google JWT payload:', jwtErr.message);
+        }
       }
     }
 
     // Fallback if client sends verified profile directly
     if (!email && profile && profile.email) {
-      email = profile.email;
+      email = profile.email.trim().toLowerCase();
       name = profile.name || profile.email.split('@')[0];
-      avatar = profile.avatar || profile.picture || '';
+      avatar = profile.avatar || profile.picture || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`;
       googleId = profile.id || profile.sub || `google_${Date.now()}`;
     }
 
