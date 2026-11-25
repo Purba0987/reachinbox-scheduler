@@ -5,6 +5,9 @@ import { Sidebar } from './components/Sidebar';
 import { ScheduledTable } from './components/ScheduledTable';
 import { SentTable } from './components/SentTable';
 import { QueueMonitoringView } from './components/QueueMonitoringView';
+import { CampaignsView } from './components/CampaignsView';
+import { AnalyticsView } from './components/AnalyticsView';
+import { SettingsView } from './components/SettingsView';
 import { ComposeModal } from './components/ComposeModal';
 import { SlackModal } from './components/SlackModal';
 import { LandingPage } from './components/LandingPage';
@@ -32,8 +35,8 @@ export const App: React.FC = () => {
     return localStorage.getItem('reachinbox_user') ? 'dashboard' : 'landing';
   });
 
-  // Tab State: 'queue' | 'scheduled' | 'sent' (defaults to 'queue' matching Image 1)
-  const [activeTab, setActiveTab] = useState<'queue' | 'scheduled' | 'sent'>('queue');
+  // Tab State: 'queue' | 'scheduled' | 'sent' | 'campaigns' | 'analytics' | 'settings'
+  const [activeTab, setActiveTab] = useState<'queue' | 'scheduled' | 'sent' | 'campaigns' | 'analytics' | 'settings'>('queue');
 
   // Search State
   const [searchQuery, setSearchQuery] = useState('');
@@ -205,6 +208,25 @@ export const App: React.FC = () => {
                 <QueueMonitoringView
                   recentJobs={[...scheduledJobs, ...sentJobs]}
                   onRefresh={refreshAll}
+                />
+              ) : activeTab === 'campaigns' ? (
+                <CampaignsView
+                  scheduledJobs={scheduledJobs}
+                  sentJobs={sentJobs}
+                  onOpenCompose={() => setIsComposeOpen(true)}
+                  onRefresh={refreshAll}
+                />
+              ) : activeTab === 'analytics' ? (
+                <AnalyticsView
+                  scheduledJobs={scheduledJobs}
+                  sentJobs={sentJobs}
+                  onRefresh={refreshAll}
+                />
+              ) : activeTab === 'settings' ? (
+                <SettingsView
+                  onOpenSlack={() => setIsSlackOpen(true)}
+                  slackConnected={slackConnected}
+                  slackChannel={slackChannel}
                 />
               ) : (
                 <>

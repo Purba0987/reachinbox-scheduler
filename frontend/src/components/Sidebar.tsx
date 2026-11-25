@@ -18,8 +18,8 @@ import {
 } from 'lucide-react';
 
 interface SidebarProps {
-  activeTab: 'queue' | 'scheduled' | 'sent' | 'failed' | 'overview' | 'campaigns' | 'analytics';
-  onSelectTab: (tab: 'queue' | 'scheduled' | 'sent') => void;
+  activeTab: 'queue' | 'scheduled' | 'sent' | 'failed' | 'overview' | 'campaigns' | 'analytics' | 'settings';
+  onSelectTab: (tab: 'queue' | 'scheduled' | 'sent' | 'campaigns' | 'analytics' | 'settings') => void;
   scheduledCount: number;
   sentCount: number;
   failedCount?: number;
@@ -126,19 +126,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
 
           <button
-            onClick={() => onSelectTab('queue')}
-            className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-[#121426] transition-all"
+            onClick={() => onSelectTab('campaigns')}
+            className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+              activeTab === 'campaigns'
+                ? 'bg-[#181a38] text-purple-200 border border-purple-500/40 shadow-[0_0_15px_rgba(139,92,246,0.15)] font-bold'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-[#121426]'
+            }`}
           >
             <Megaphone className="w-4 h-4 text-purple-400" />
-            <span>Campaigns</span>
+            <span className={activeTab === 'campaigns' ? 'text-white' : ''}>Campaigns</span>
           </button>
 
           <button
-            onClick={() => onSelectTab('queue')}
-            className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-[#121426] transition-all"
+            onClick={() => onSelectTab('analytics')}
+            className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+              activeTab === 'analytics'
+                ? 'bg-[#181a38] text-purple-200 border border-purple-500/40 shadow-[0_0_15px_rgba(139,92,246,0.15)] font-bold'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-[#121426]'
+            }`}
           >
             <BarChart3 className="w-4 h-4 text-cyan-400" />
-            <span>Analytics</span>
+            <span className={activeTab === 'analytics' ? 'text-white' : ''}>Analytics</span>
           </button>
         </nav>
 
@@ -166,8 +174,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
 
           <button
-            onClick={() => onSelectTab('scheduled')}
-            className="w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-[#121426] transition-all"
+            onClick={() => onSelectTab('settings')}
+            className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium transition-all ${
+              activeTab === 'settings'
+                ? 'bg-[#181a38] text-purple-200 border border-purple-500/40 shadow-[0_0_15px_rgba(139,92,246,0.15)] font-bold'
+                : 'text-slate-400 hover:text-white hover:bg-[#121426]'
+            }`}
           >
             <Users className="w-4 h-4 text-purple-400" />
             <span>Sender Accounts</span>
@@ -182,11 +194,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </button>
 
           <button
-            onClick={() => onSelectTab('queue')}
-            className="w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-[#121426] transition-all"
+            onClick={() => onSelectTab('settings')}
+            className={`w-full flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-medium transition-all ${
+              activeTab === 'settings'
+                ? 'bg-[#181a38] text-purple-200 border border-purple-500/40 shadow-[0_0_15px_rgba(139,92,246,0.15)] font-bold'
+                : 'text-slate-400 hover:text-white hover:bg-[#121426]'
+            }`}
           >
             <Settings className="w-4 h-4 text-slate-400" />
-            <span>Settings</span>
+            <span className={activeTab === 'settings' ? 'text-white' : ''}>Settings</span>
           </button>
         </div>
       </div>
