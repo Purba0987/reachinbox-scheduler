@@ -28,6 +28,7 @@ export interface EmailJob {
   batchId?: string | null;
   delaySeconds: number;
   hourlyLimit: number;
+  priority?: number;
   previewUrl?: string | null;
   errorMessage?: string | null;
   sender?: Sender | null;
@@ -41,8 +42,49 @@ export interface ScheduleEmailPayload {
   scheduledAt: string;
   delaySeconds?: number;
   hourlyLimit?: number;
+  priority?: number;
   senderId?: string | null;
   userId?: string | null;
+}
+
+export interface PrioritizedJob {
+  id: string;
+  bullJobId: string;
+  recipientEmail: string;
+  subject: string;
+  body: string;
+  priority: number;
+  priorityLabel: 'HIGH' | 'MEDIUM' | 'LOW';
+  status: EmailStatus;
+  bullState: string;
+  delaySeconds: number;
+  hourlyLimit: number;
+  attemptCount: number;
+  maxAttempts: number;
+  scheduledAt: string;
+  sentAt?: string | null;
+  createdAt: string;
+  sender?: Sender | null;
+  previewUrl?: string | null;
+  errorMessage?: string | null;
+  opts?: any;
+}
+
+export interface QueuePriorityStats {
+  totalPrioritized: number;
+  highPriority: number;
+  mediumPriority: number;
+  lowPriority: number;
+  activeJobs: number;
+  isPaused: boolean;
+  counts: {
+    active: number;
+    waiting: number;
+    delayed: number;
+    completed: number;
+    failed: number;
+    paused: number;
+  };
 }
 
 export interface SlackStatus {

@@ -16,6 +16,7 @@ const scheduleEmailSchema = z.object({
   hourlyLimit: z.number().int().min(1).optional().default(5),
   senderId: z.string().optional().nullable(),
   userId: z.string().optional().nullable(),
+  priority: z.union([z.number().int().min(1).max(3), z.string()]).optional().default(2),
 });
 
 // POST /api/emails/schedule - Accept email scheduling requests via API
@@ -64,6 +65,17 @@ router.post('/schedule', async (req: Request, res: Response) => {
       }
     }
 
+    // Resolve numeric priority: 1 = High, 2 = Medium, 3 = Low
+    let resolvedPriority = 2;
+    if (typeof validatedData.priority === 'number') {
+      resolvedPriority = validatedData.priority;
+    } else if (typeof validatedData.priority === 'string') {
+      const p = validatedData.priority.toUpperCase();
+      if (p === 'HIGH' || p === '1') resolvedPriority = 1;
+      else if (p === 'LOW' || p === '3') resolvedPriority = 3;
+      else resolvedPriority = 2;
+    }
+
     // Create DB records and enqueue each job into BullMQ
     for (let i = 0; i < validatedData.recipients.length; i++) {
       const recipient = validatedData.recipients[i].trim();
@@ -80,6 +92,7 @@ router.post('/schedule', async (req: Request, res: Response) => {
           status: 'SCHEDULED',
           delaySeconds: validatedData.delaySeconds,
           hourlyLimit: validatedData.hourlyLimit,
+          priority: resolvedPriority,
           senderId: validSenderId,
           userId: validUserId,
           batchId,

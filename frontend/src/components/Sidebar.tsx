@@ -158,9 +158,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
           >
             <div className="flex items-center gap-3">
               <Activity className="w-4 h-4 text-purple-400" />
-              <span className={activeTab === 'queue' ? 'text-white' : ''}>Queue Monitoring</span>
+              <span className={activeTab === 'queue' ? 'text-white' : ''}>Prioritized Queue</span>
             </div>
-            <span className="w-2 h-2 rounded-full bg-purple-400 animate-pulse" />
+            <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-purple-600/30 text-purple-300 border border-purple-500/30">
+              BullMQ
+            </span>
           </button>
 
           <button

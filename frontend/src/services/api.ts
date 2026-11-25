@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { EmailJob, ScheduleEmailPayload, Sender, SlackStatus, User } from '../types';
+import { EmailJob, ScheduleEmailPayload, Sender, SlackStatus, User, PrioritizedJob, QueuePriorityStats } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
@@ -9,6 +9,47 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+export const queueApi = {
+  getStats: async () => {
+    const res = await api.get('/queue/stats');
+    return res.data;
+  },
+  getPrioritizedJobs: async (params?: {
+    search?: string;
+    priority?: string;
+    status?: string;
+    sortBy?: string;
+    sortOrder?: string;
+  }) => {
+    const res = await api.get<{
+      stats: QueuePriorityStats;
+      total: number;
+      jobs: PrioritizedJob[];
+    }>('/queue/prioritized-jobs', { params });
+    return res.data;
+  },
+  updatePriority: async (jobId: string, priority: number) => {
+    const res = await api.patch(`/queue/jobs/${jobId}/priority`, { priority });
+    return res.data;
+  },
+  retryJob: async (jobId: string) => {
+    const res = await api.post(`/queue/jobs/${jobId}/retry`);
+    return res.data;
+  },
+  removeJob: async (jobId: string) => {
+    const res = await api.delete(`/queue/jobs/${jobId}`);
+    return res.data;
+  },
+  pauseQueue: async () => {
+    const res = await api.post('/queue/pause');
+    return res.data;
+  },
+  resumeQueue: async () => {
+    const res = await api.post('/queue/resume');
+    return res.data;
+  },
+};
 
 export const emailApi = {
   schedule: async (payload: ScheduleEmailPayload) => {

@@ -15,6 +15,7 @@ import emailRoutes from './routes/emailRoutes';
 import authRoutes from './routes/authRoutes';
 import slackRoutes from './routes/slackRoutes';
 import senderRoutes from './routes/senderRoutes';
+import queueRoutes from './routes/queueRoutes';
 
 const app = express();
 
@@ -90,6 +91,7 @@ app.get('/api/queue/stats', async (req, res) => {
 });
 
 // 3. API Routes
+app.use('/api/queue', queueRoutes);
 app.use('/api/emails', emailRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/slack', slackRoutes);
