@@ -28,7 +28,6 @@ export const ComposeModal: React.FC<ComposeModalProps> = ({ isOpen, onClose, onS
   });
   const [delaySeconds, setDelaySeconds] = useState<number>(2);
   const [hourlyLimit, setHourlyLimit] = useState<number>(5);
-  const [priority, setPriority] = useState<number>(2);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -123,7 +122,6 @@ export const ComposeModal: React.FC<ComposeModalProps> = ({ isOpen, onClose, onS
         scheduledAt: new Date(startTime).toISOString(),
         delaySeconds,
         hourlyLimit,
-        priority,
         senderId: selectedSenderId || undefined,
         userId: userId || undefined,
       });
@@ -310,7 +308,7 @@ export const ComposeModal: React.FC<ComposeModalProps> = ({ isOpen, onClose, onS
           </div>
 
           {/* Scheduler Parameters Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 bg-[#12141f] rounded-xl border border-[#1f2333]">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 bg-[#12141f] rounded-xl border border-[#1f2333]">
             {/* Start Time */}
             <div>
               <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
@@ -321,14 +319,14 @@ export const ComposeModal: React.FC<ComposeModalProps> = ({ isOpen, onClose, onS
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
                 required
-                className="w-full bg-[#171a27] border border-[#272d42] rounded-md px-2 py-1.5 text-xs text-gray-200 focus:outline-none focus:border-indigo-500"
+                className="w-full bg-[#171a27] border border-[#272d42] rounded-md px-2.5 py-1.5 text-xs text-gray-200 focus:outline-none focus:border-indigo-500"
               />
             </div>
 
             {/* Delay between emails */}
             <div>
               <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
-                Delay / Send
+                Delay Between Emails
               </label>
               <div className="flex items-center gap-1.5">
                 <input
@@ -337,7 +335,7 @@ export const ComposeModal: React.FC<ComposeModalProps> = ({ isOpen, onClose, onS
                   max="60"
                   value={delaySeconds}
                   onChange={(e) => setDelaySeconds(parseInt(e.target.value, 10) || 0)}
-                  className="w-full bg-[#171a27] border border-[#272d42] rounded-md px-2 py-1.5 text-xs text-gray-200 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-[#171a27] border border-[#272d42] rounded-md px-2.5 py-1.5 text-xs text-gray-200 focus:outline-none focus:border-indigo-500"
                 />
                 <span className="text-xs text-gray-400">sec</span>
               </div>
@@ -346,7 +344,7 @@ export const ComposeModal: React.FC<ComposeModalProps> = ({ isOpen, onClose, onS
             {/* Hourly Rate Limit */}
             <div>
               <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
-                Hourly Cap
+                Hourly Cap / Sender
               </label>
               <div className="flex items-center gap-1.5">
                 <input
@@ -355,26 +353,10 @@ export const ComposeModal: React.FC<ComposeModalProps> = ({ isOpen, onClose, onS
                   max="1000"
                   value={hourlyLimit}
                   onChange={(e) => setHourlyLimit(parseInt(e.target.value, 10) || 1)}
-                  className="w-full bg-[#171a27] border border-[#272d42] rounded-md px-2 py-1.5 text-xs text-gray-200 focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-[#171a27] border border-[#272d42] rounded-md px-2.5 py-1.5 text-xs text-gray-200 focus:outline-none focus:border-indigo-500"
                 />
                 <span className="text-xs text-gray-400">/hr</span>
               </div>
-            </div>
-
-            {/* Priority Selection */}
-            <div>
-              <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
-                Priority
-              </label>
-              <select
-                value={priority}
-                onChange={(e) => setPriority(parseInt(e.target.value, 10))}
-                className="w-full bg-[#171a27] border border-[#272d42] rounded-md px-2 py-1.5 text-xs text-gray-200 focus:outline-none focus:border-indigo-500 font-semibold"
-              >
-                <option value={1} className="bg-[#121424] text-rose-300">⚡ High (1)</option>
-                <option value={2} className="bg-[#121424] text-amber-300">⏳ Med (2)</option>
-                <option value={3} className="bg-[#121424] text-blue-300">💤 Low (3)</option>
-              </select>
             </div>
           </div>
 
